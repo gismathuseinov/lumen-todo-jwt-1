@@ -19,20 +19,19 @@ class UserController extends Controller
         $this->middleware('auth');
     }
 
-    public function profile(): JsonResponse
-    {
-        return response()->json([
-            'user' => Auth::user()
-        ]);
-    }
-
-
-    public function show(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $user = $request->has('id')
             ? User::find($request->id)
             : User::all();
         return response()->json($user);
+    }
+
+    public function profile(): JsonResponse
+    {
+        return response()->json([
+            'user' => Auth::user()
+        ]);
     }
 
     public function logout(): JsonResponse

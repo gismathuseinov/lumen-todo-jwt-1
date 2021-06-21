@@ -55,7 +55,7 @@ class TaskController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors());
         } else {
-            $task = Task::where('id', $request->id)->update($request->all());
+            Task::where('id', $request->id)->update($request->all());
             return response()->json(Task::find($request->id));
         }
     }

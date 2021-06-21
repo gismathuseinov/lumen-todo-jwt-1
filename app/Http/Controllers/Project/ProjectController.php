@@ -45,7 +45,6 @@ class ProjectController extends Controller
 
     public function update(Request $request): JsonResponse
     {
-
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'min:3'],
             'id' => ['required']
@@ -68,7 +67,7 @@ class ProjectController extends Controller
 
     public function destroy(int $id): JsonResponse
     {
-        $project = Project::find($id);
+        $project = Project::findOrFail($id);
         $project->delete();
         return response()->json(['msg' => 'removed']);
     }

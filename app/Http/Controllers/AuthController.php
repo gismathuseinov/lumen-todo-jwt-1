@@ -44,7 +44,6 @@ class AuthController extends Controller
         if ($validator->failed()) {
             return response()->json([$validator->errors()]);
         } else {
-
             $credentials = $request->only(['email', 'password']);
             if (!$token = Auth::attempt($credentials)) {
                 return response()->json([

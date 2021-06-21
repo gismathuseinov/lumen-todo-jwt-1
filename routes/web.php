@@ -32,7 +32,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         });
 
         $router->group(['prefix' => 'user'], function () use ($router) {
-            $router->get('/', ['middleware' => 'manager', 'uses' => 'UserController@show']);
+            $router->get('/', ['middleware' => 'manager', 'uses' => 'UserController@index']);
             $router->post('/create', ['middleware' => 'manager', 'uses' => 'AuthController@store']);
             $router->get('/profile', 'UserController@profile');
             $router->get('/projects', 'UserController@projects');
