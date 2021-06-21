@@ -27,6 +27,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
             $router->get('/', 'Task\TaskController@index');
             $router->post('/', 'Task\TaskController@store');
             $router->post('/edit', 'Task\TaskController@update');
+            $router->post('/destroy','Task\TaskController@destroy');
         });
 
         $router->group(['prefix' => 'user'], function () use ($router) {
