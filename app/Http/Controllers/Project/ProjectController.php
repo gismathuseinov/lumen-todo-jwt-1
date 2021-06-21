@@ -62,7 +62,14 @@ class ProjectController extends Controller
     {
         $task = $request->has('pr_id')
             ? Task::where('project_id', $request->id)->get()
-            : DB::table('tasks')->leftJoin('projects','tasks.project_id','=','projects.id')->select('tasks.*','projects.*')->get();
+            : DB::table('tasks')->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')->select('tasks.*', 'projects.*')->get();
         return response()->json($task);
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $project = Project::find($id);
+        $project->delete();
+        return response()->json(['msg' => 'removed']);
     }
 }

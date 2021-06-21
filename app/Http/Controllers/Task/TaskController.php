@@ -34,6 +34,11 @@ class TaskController extends Controller
             return response()->json($validator->errors());
         } else {
             $task = Task::create($request->all());
+            UserTasks::create([
+                'user_id' => Auth::id(),
+                'task_id' => $task['id'],
+                'project_id' => $request['project_id']
+            ]);
             return response()->json($task);
         }
     }
@@ -55,15 +60,12 @@ class TaskController extends Controller
         }
     }
 
-    public function destroy(Request $request): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
-        if($request->has('id')){
-            DB::table('tasks')->where('id',$request->id)->delete();
-            DB::table('user_tasks')->where('task_id',$request->id)->where('user_id',Auth::id())->delete();
-            return response()->json(['msg'=>'removed']);
-        }else{
-            return response()->json(['err'=>'task id required']);
-        }
+        DB::table('tasks')->where('id', $id)->delete();
+        DB::table('user_tasks')->where('task_id', $id)->where('user_id', Auth::id())->delete();
+        return response()->json(['msg' => 'removed']);
+
     }
 
 }
