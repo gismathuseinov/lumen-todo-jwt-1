@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 
 
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\User;
 use App\Models\UserTasks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -26,14 +26,6 @@ class UserController extends Controller
         ]);
     }
 
-    /*
-        public function all(): JsonResponse
-        {
-            return response()->json([
-                'users' => User::all()
-            ]);
-        }
-    */
 
     public function show(Request $request): JsonResponse
     {
@@ -68,8 +60,16 @@ class UserController extends Controller
         return response()->json($tasks);
     }
 
-    public function prTask(int $id){
-        $tasks = UserTasks::where('user_id',Auth::id())->where('project_id',$id)->get();
-        return response()->json($tasks);
+    public function projectTasks(int $id): JsonResponse
+    {
+        $tasks = UserTasks::select('task_id', 'project_id')
+            ->where('user_id', Auth::id())
+            ->where('project_id', $id)
+            ->get();
+        foreach ($tasks as $key => $task) {
+            $return[$key]['task'] = Task::where('id', $task['task_id'])->where('project_id', $task['project_id'])->get();
+            $return[$key]['project'] = Project::where('id', $task['project_id'])->where('user_id', Auth::id())->get();
+        }
+        return response()->json($return);
     }
 }
