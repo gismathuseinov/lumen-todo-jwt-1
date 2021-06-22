@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Task;
 
 use App\Http\Controllers\Controller;
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\UserTasks;
 use Illuminate\Http\JsonResponse;
@@ -15,10 +16,21 @@ class TaskController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $tasks = $request->has('id')
-            ? Task::find($request->id)
-            : Task::all();
-        return response()->json($tasks);
+        $task = Task::query();
+        if (!$request->has('id')) {
+            if ($request->has('title')) {
+                $task->where('title', 'like', '%' . $request->get('title') . '%')->get();
+            }
+            if ($request->has('close')) {
+                $task->where('close', $request->get('close'))->get();
+            }
+            if ($request->has('status')) {
+                $task->where('status', $request->get('status'))->get();
+            }
+            return response()->json($task->get());
+        } else {
+            return response()->json(Task::findOrFail($request->id));
+        }
     }
 
     public function store(Request $request): JsonResponse
@@ -30,20 +42,31 @@ class TaskController extends Controller
             'close' => ['required'],
             'status' => ['required', 'integer']
         ]);
+        $request['project_id'] = (int)$request['project_id'];
+
         if ($validator->fails()) {
             return response()->json($validator->errors());
         } else {
+            $projectCheck = Project::find($request['project_id']);
+            if (!$projectCheck) {
+                return response()->json([
+                    'err' => 'project not found'
+                ]);
+            }
             $task = Task::create($request->all());
-            UserTasks::create([
+            $rel = UserTasks::create([
                 'user_id' => Auth::id(),
                 'task_id' => $task['id'],
                 'project_id' => $request['project_id']
             ]);
-            return response()->json($task);
+            return response()->json([
+                'task' => $task,
+                'relation' => $rel
+            ]);
         }
     }
 
-    public function update(Request $request): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'project_id' => ['required', 'integer'],
@@ -52,11 +75,20 @@ class TaskController extends Controller
             'close' => ['required'],
             'status' => ['required', 'integer']
         ]);
+        $request['project_id'] = (int)$request['project_id'];
         if ($validator->fails()) {
             return response()->json($validator->errors());
+
         } else {
-            Task::where('id', $request->id)->update($request->all());
-            return response()->json(Task::find($request->id));
+            $projectCheck = Project::find($request['project_id']);
+            if (!$projectCheck) {
+                return response()->json([
+                    'err' => 'project not found'
+                ]);
+            }
+            $task = Task::findOrFail($id);
+            $task->update($request->all());
+            return response()->json($task);
         }
     }
 

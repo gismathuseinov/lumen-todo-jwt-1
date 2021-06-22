@@ -21,10 +21,19 @@ class UserController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $user = $request->has('id')
-            ? User::find($request->id)
-            : User::all();
-        return response()->json($user);
+        $user = User::query();
+        if (!$request->has('id')) {
+            if ($request->has('name')) {
+                $user->where('name', 'like', '%' . $request->get('name') . '%')->get();
+            }
+            if ($request->has('role')) {
+                $user->where('roles', $request->get('role'))->get();
+            }
+
+            return response()->json($user->get());
+        } else {
+            return response()->json(User::findOrFail($request->id));
+        }
     }
 
     public function profile(): JsonResponse
@@ -53,10 +62,21 @@ class UserController extends Controller
 
     public function tasks(Request $request): JsonResponse
     {
-        $tasks = $request->has('id')
-            ? Auth::user()->singleTask($request->id)
-            : Auth::user()->tasks;
-        return response()->json($tasks);
+        $tasks = Task::query();
+        if (!$request->has('id')) {
+            if ($request->has('title')) {
+                $tasks->where('title', 'like', '%' . $request->get('title') . '%');
+            }
+            if ($request->has('close')) {
+                $tasks->where('close', 'like','%'.$request->get('close').'%');
+            }
+            if ($request->has('status')) {
+                $tasks->where('status', $request->get('status'));
+            }
+            return response()->json($tasks->get());
+        } else {
+            return response()->json(Task::findOrFail($request->id));
+        }
     }
 
     public function projectTasks(int $id): JsonResponse
@@ -65,10 +85,13 @@ class UserController extends Controller
             ->where('user_id', Auth::id())
             ->where('project_id', $id)
             ->get();
-        foreach ($tasks as $key => $task) {
-            $return[$key]['task'] = Task::where('id', $task['task_id'])->where('project_id', $task['project_id'])->get();
-            $return[$key]['project'] = Project::where('id', $task['project_id'])->where('user_id', Auth::id())->get();
+        if (sizeof($tasks) !== 0) {
+            foreach ($tasks as $key => $task) {
+                $return[$key] = Task::where('id', $task['task_id'])->where('project_id', $task['project_id'])->get();
+            }
+            return response()->json($return);
+        } else {
+            return response()->json(['msg' => 'not found'], 404);
         }
-        return response()->json($return);
     }
 }

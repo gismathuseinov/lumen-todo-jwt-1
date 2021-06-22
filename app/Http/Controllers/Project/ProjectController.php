@@ -23,10 +23,17 @@ class ProjectController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $project = $request->has('id')
-            ? Project::find($request->id)
-            : Project::all();
-        return response()->json($project);
+        $project = Project::query();
+
+        if(!$request->has('id')) {
+            if($request->has('name')) {
+                $project->where('name', 'like', '%'.$request->get('name').'%');
+            }
+
+            return response()->json($project->get());
+        } else {
+            return response()->json(Project::find($request->id));
+        }
     }
 
     public function store(Request $request): JsonResponse
@@ -43,25 +50,27 @@ class ProjectController extends Controller
         }
     }
 
-    public function update(Request $request): JsonResponse
+    public function update(Request $request,int $id): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'min:3'],
-            'id' => ['required']
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors());
         } else {
-            $project = Project::where('id', $request->id)->update($request->all());
-            return response()->json(Project::find($request->id));
+            Project::where('id', $id)->update($request->all());
+            return response()->json(Project::find($id));
         }
     }
 
     public function tasks(Request $request): JsonResponse
     {
-        $task = $request->has('pr_id')
+        $task = $request->has('id')
             ? Task::where('project_id', $request->id)->get()
-            : DB::table('tasks')->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')->select('tasks.*', 'projects.*')->get();
+            : DB::table('tasks')
+                ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
+                ->select('tasks.*', 'projects.*')
+                ->get();
         return response()->json($task);
     }
 
@@ -69,6 +78,8 @@ class ProjectController extends Controller
     {
         $project = Project::findOrFail($id);
         $project->delete();
+        DB::table('tasks')->where('project_id',$id)->delete();
+        DB::table('user_tasks')->where('project_id')->delete();
         return response()->json(['msg' => 'removed']);
     }
 }
