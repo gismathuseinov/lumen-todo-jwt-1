@@ -18,7 +18,5 @@ class Task extends Model
         'status'
     ];
 
-    public function project(){
 
-    }
 }
