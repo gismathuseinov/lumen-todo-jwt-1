@@ -21,14 +21,14 @@ class Manager
         if (!$auth) {
             return response()->json([
                'msg' => 'unAuthorized'
-            ]);
+            ], 401);
         } else {
-            if ($auth['roles'] === \Roles::MANAGER) {
+            if ($auth['roles'] === \Roles::MANAGER || $auth['roles'] === \Roles::ADMIN) {
                 return $next($request);
             } else {
                 return response()->json([
                     'msg' => 'Access Denied'
-                ]);
+                ], 400);
             }
         }
 
