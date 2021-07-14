@@ -80,7 +80,10 @@ $app->configure('auth');
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
      'manager' => App\Http\Middleware\Manager::class,
-     App\Http\Middleware\CorsMiddleware::class
+     'admin' => App\Http\Middleware\Admin::class
+ ]);
+ $app->middleware([
+    App\Http\Middleware\CorsMiddleware::class
  ]);
 
 /*
@@ -94,9 +97,9 @@ $app->configure('auth');
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
+$app->register(App\Providers\AppServiceProvider::class);
  $app->register(App\Providers\AuthServiceProvider::class);
- $app->register(App\Providers\EventServiceProvider::class);
+//  $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 

@@ -14,6 +14,7 @@ class Controller extends BaseController
             'token' => $token,
             'token_type' => 'bearer',
             'expires_in' => 1024 * 60,
+            'user' => \auth()->user()
         ], 200);
     }
 

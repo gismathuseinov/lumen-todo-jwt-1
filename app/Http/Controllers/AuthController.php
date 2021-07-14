@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -14,18 +15,16 @@ class AuthController extends Controller
 {
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
-
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'min:3'],
             'email' => ['required', 'email', 'unique:users'],
             'password' => ['required', 'min:6'],
-            'roles' => ['required', 'integer']
+            'roles' => ['required']
         ]);
-
-
-        if ($validator->fails()) {
+        if ($validator->failed()) {
             return response()->json($validator->errors());
         } else {
+            $request['roles'] = (int)$request['roles'];
             $request['password'] = Hash::make($request['password']);
             $user = User::create($request->all());
             return response()->json([
@@ -42,7 +41,7 @@ class AuthController extends Controller
             'password' => ['required', 'min:6'],
         ]);
         if ($validator->failed()) {
-            return response()->json([$validator->errors()]);
+            return response()->json([$validator->errors()], 404);
         } else {
             $credentials = $request->only(['email', 'password']);
             if (!$token = Auth::attempt($credentials)) {
@@ -54,5 +53,15 @@ class AuthController extends Controller
         }
 
 
+    }
+
+    public function passwordReset(int $id): JsonResponse
+    {
+        $defaultPassword = Hash::make(123456);
+        $user = User::find($id);
+        $user->update([
+            'password' => $defaultPassword
+        ]);
+        return response()->json(['msg' => 'password reset']);
     }
 }
