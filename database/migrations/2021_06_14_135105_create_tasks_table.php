@@ -19,12 +19,12 @@ class CreateTasksTable extends Migration
             $table->string('title');
             $table->text('descr');
             $table->string('close');
-            $table->integer('status');
+            $table->integer('status')->default(1);
             /*
-             * 0=> todo
-             * 1=>doing
-             * 2=>test
-             * 3=>done
+             * 1=>todo
+             * 2=>doing
+             * 3=>test
+             * 4=>done
              */
             $table->timestamps();
         });
